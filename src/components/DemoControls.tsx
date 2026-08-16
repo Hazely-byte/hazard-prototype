@@ -8,7 +8,7 @@ export default function DemoControls() {
   const [isOpen, setIsOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   
-  const seedDemoData = useHazardStore((state) => state.seedDemoData);
+  const fetchSeedData = useHazardStore((state) => state.fetchSeedData);
   const simulateRapidUpvotes = useHazardStore((state) => state.simulateRapidUpvotes);
   const toggleWeatherAlert = useHazardStore((state) => state.toggleWeatherAlert);
   const simulateAI = useHazardStore((state) => state.simulateAI);
@@ -55,7 +55,7 @@ export default function DemoControls() {
 
             <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
               <button
-                onClick={() => handleAction(seedDemoData, 'Data seeded!')}
+                onClick={() => handleAction(fetchSeedData, 'Data seeded!')}
                 className="bg-[#D4F67B] text-[#192625] rounded-xl py-3 px-4 font-semibold w-full active:scale-95 transition-all text-sm text-left flex items-center gap-2"
               >
                 <span>🌱</span> Seed Presentation Hazards
