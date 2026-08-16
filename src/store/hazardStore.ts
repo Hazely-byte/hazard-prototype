@@ -85,20 +85,21 @@ interface HazardState {
   toggleUpvote: (id: string) => void;
   upvoteHazard: (id: string) => void;
   setFilter: (filter: string) => void;
-  seedDemoData: () => void;
+  fetchSeedData: () => Promise<void>;
   simulateRapidUpvotes: () => void;
   toggleWeatherAlert: () => void;
   toggleSimulateAI: () => void;
   markAllAlertsRead: () => void;
   dismissAlert: (id: string) => void;
   addCivicPoints: (points: number, reason: string) => void;
+  reportPost: (reason: string) => void;
   getCurrentTier: () => TierInfo;
   getEarnedBadges: () => Badge[];
   resetStore: () => void;
 }
 
 const initialProfile: UserProfile = {
-  name: 'Aarav Sharma',
+  name: 'Owner',
   civicPoints: 850,
   reportsCount: 12,
   upvotesReceived: 48,
@@ -266,28 +267,31 @@ export const useHazardStore = create<HazardState>()(
 
       setFilter: (filter) => set({ activeFilter: filter }),
 
-      seedDemoData: () => {
-        set({
-          hazards: SEED_HAZARDS,
-          userUpvotedHazardIds: ['h1', 'h4'],
-          alerts: INITIAL_ALERTS,
-          userProfile: {
-            name: 'Aarav Sharma',
-            civicPoints: 850,
-            reportsCount: 12,
-            upvotesReceived: 48,
-            hazardsResolved: 3,
-            earnedBadgeIds: ['first-responder', 'eagle-eye', 'road-savior'],
-            activityLog: [
-              {
-                id: crypto.randomUUID(),
-                type: 'badge',
-                description: 'Earned Road Savior badge',
-                timestamp: new Date().toISOString(),
+      fetchSeedData: async () => {
+        try {
+          const res = await fetch('/api/seed');
+          const data = await res.json();
+          if (data.hazards && data.hazards.length > 0) {
+            set({
+              hazards: data.hazards,
+              userUpvotedHazardIds: [],
+              alerts: INITIAL_ALERTS,
+              userProfile: {
+                ...get().userProfile,
+                activityLog: [
+                  {
+                    id: crypto.randomUUID(),
+                    type: 'badge',
+                    description: 'Loaded local data',
+                    timestamp: new Date().toISOString(),
+                  },
+                ],
               },
-            ],
-          },
-        });
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch seed data:", error);
+        }
       },
 
       simulateRapidUpvotes: () => {
@@ -349,6 +353,26 @@ export const useHazardStore = create<HazardState>()(
         });
       },
 
+      reportPost: (reason) => {
+        set((state) => {
+          const timestamp = new Date().toISOString();
+          const newActivity: ActivityEntry = {
+            id: crypto.randomUUID(),
+            type: 'report',
+            description: `Reported post for review (${reason})`,
+            timestamp,
+            points: 0,
+          };
+
+          return {
+            userProfile: {
+              ...state.userProfile,
+              activityLog: [newActivity, ...state.userProfile.activityLog].slice(0, 30),
+            },
+          };
+        });
+      },
+
       getCurrentTier: () => {
         const points = get().userProfile.civicPoints;
         const eligibleTiers = TIERS.filter((tier) => tier.minPoints <= points);
@@ -388,9 +412,6 @@ export const useHazardStore = create<HazardState>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.setHasHydrated(true);
-          if (state.hazards.length === 0) {
-            state.seedDemoData();
-          }
         }
       },
     }

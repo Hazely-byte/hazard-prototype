@@ -8,7 +8,9 @@ import WeatherAlert from '@/components/WeatherAlert';
 import AlertsDrawer from '@/components/AlertsDrawer';
 import BottomNav from '@/components/BottomNav';
 import DemoControls from '@/components/DemoControls';
+import ReportModal from '@/components/ReportModal';
 import { Bell, Shield } from 'lucide-react';
+import { Hazard } from '@/data/seedData';
 
 export default function FeedPage() {
   const [mounted, setMounted] = useState(false);
@@ -17,14 +19,35 @@ export default function FeedPage() {
   const hazards = useHazardStore((state) => state.hazards);
   const activeFilter = useHazardStore((state) => state.activeFilter);
   const setFilter = useHazardStore((state) => state.setFilter);
-  const seedDemoData = useHazardStore((state) => state.seedDemoData);
+  const fetchSeedData = useHazardStore((state) => state.fetchSeedData);
   const alerts = useHazardStore((state) => state.alerts);
   const setUserLocation = useHazardStore((state) => state.setUserLocation);
+  const userLocation = useHazardStore((state) => state.userLocation);
+  const toggleUpvote = useHazardStore((state) => state.toggleUpvote);
+  const userUpvotedHazardIds = useHazardStore((state) => state.userUpvotedHazardIds);
+  const reportPost = useHazardStore((state) => state.reportPost);
+
+  const [selectedHazard, setSelectedHazard] = useState<Hazard | null>(null);
+  const [hiddenReports, setHiddenReports] = useState<string[]>([]);
 
   useEffect(() => {
     setMounted(true);
     if (useHazardStore.getState().hazards.length === 0) {
-      seedDemoData();
+      fetchSeedData();
+    }
+
+    // Handle deep-link from Map
+    if (typeof window !== 'undefined' && hazards.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const activeId = params.get('activeId');
+      if (activeId) {
+        const hazard = hazards.find(h => h.id === activeId);
+        if (hazard) {
+          setSelectedHazard(hazard);
+          // Clean up the URL so refresh doesn't reopen it
+          window.history.replaceState(null, '', '/feed');
+        }
+      }
     }
 
     // Try to get real user GPS location for live distance meter
@@ -42,19 +65,20 @@ export default function FeedPage() {
         { timeout: 5000 }
       );
     }
-  }, [seedDemoData, setUserLocation]);
+  }, [fetchSeedData, setUserLocation]);
 
   const activeCount = useMemo(() => hazards.filter((h) => h.status === 'active').length, [hazards]);
   const unreadAlertsCount = useMemo(() => alerts.filter((a) => !a.isRead).length, [alerts]);
 
   const filteredHazards = useMemo(() => {
-    let filtered = hazards;
+    let filtered = hazards.filter(h => !hiddenReports.includes(h.id));
+
     if (activeFilter === 'all') {
-      filtered = hazards.filter((h) => h.status !== 'resolved');
+      filtered = filtered.filter((h) => h.status !== 'resolved');
     } else if (activeFilter === 'resolved') {
-      filtered = hazards.filter((h) => h.status === 'resolved');
+      filtered = filtered.filter((h) => h.status === 'resolved');
     } else {
-      filtered = hazards.filter((h) => h.category === activeFilter && h.status !== 'resolved');
+      filtered = filtered.filter((h) => h.category === activeFilter && h.status !== 'resolved');
     }
 
     const severityWeight: Record<string, number> = { high: 3, medium: 2, low: 1 };
@@ -71,9 +95,10 @@ export default function FeedPage() {
   const categories = [
     { value: 'all', label: 'All', icon: '📋' },
     { value: 'pothole', label: 'Potholes', icon: '🕳️' },
+    { value: 'broken-bridge', label: 'Bridges', icon: '🌉' },
     { value: 'hanging-wire', label: 'Electrical', icon: '⚡' },
-    { value: 'waterlogging', label: 'Flooding', icon: '🌊' },
-    { value: 'resolved', label: 'Resolved', icon: '✅' },
+    { value: 'waterlogging', label: 'Waterlogging', icon: '🌊' },
+    { value: 'fallen-tree', label: 'Obstructions', icon: '🌳' },
   ];
 
   return (
@@ -81,12 +106,11 @@ export default function FeedPage() {
       {/* Sticky App Header */}
       <div className="sticky top-0 bg-white/85 backdrop-blur-md border-b border-[#E2E8DC] px-4 py-3 z-30 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-[#192625] flex items-center justify-center text-[#D4F67B]">
-            <Shield size={18} />
+          <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0">
+            <img src="/logo.jpg" alt="Team LEAF Logo" className="w-full h-full object-cover" />
           </div>
           <div>
-            <span className="font-extrabold text-base text-[#192625] tracking-tight">CivicShield</span>
-            <span className="block text-[10px] text-gray-500 font-medium -mt-1">RoadPulse Smart City</span>
+            <span className="font-extrabold text-base text-[#192625] tracking-tight">Team LEAF</span>
           </div>
         </div>
         
@@ -144,7 +168,7 @@ export default function FeedPage() {
               className="animate-slide-up"
               style={{ animationDelay: `${Math.min(i * 60, 400)}ms` }}
             >
-              <HazardCard hazard={hazard} />
+              <HazardCard hazard={hazard} onClick={() => setSelectedHazard(hazard)} />
             </div>
           ))}
         </div>
@@ -158,6 +182,22 @@ export default function FeedPage() {
 
       <BottomNav />
       <DemoControls />
+
+      <ReportModal
+        hazard={selectedHazard}
+        isOpen={!!selectedHazard}
+        onClose={() => setSelectedHazard(null)}
+        userLocation={userLocation}
+        isUpvoted={selectedHazard ? userUpvotedHazardIds.includes(selectedHazard.id) : false}
+        onUpvote={() => selectedHazard && toggleUpvote(selectedHazard.id)}
+        onReportSubmit={(reason) => {
+          if (selectedHazard) {
+            setHiddenReports(prev => [...prev, selectedHazard.id]);
+            reportPost(reason);
+            setSelectedHazard(null);
+          }
+        }}
+      />
     </div>
   );
 }

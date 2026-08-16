@@ -55,11 +55,11 @@ export interface RouteConfig {
 }
 
 export const CATEGORY_LABELS: Record<HazardCategory, string> = {
-  'pothole': 'Pothole',
-  'broken-bridge': 'Broken Bridge',
-  'hanging-wire': 'Hanging Wire',
+  'pothole': 'Potholes',
+  'broken-bridge': 'Bridges',
+  'hanging-wire': 'Electrical',
   'streetlight': 'Broken Streetlight',
-  'fallen-tree': 'Fallen Tree',
+  'fallen-tree': 'Obstructions',
   'waterlogging': 'Waterlogging',
   'other': 'Other',
 };

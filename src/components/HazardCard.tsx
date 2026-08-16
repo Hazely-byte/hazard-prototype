@@ -21,7 +21,7 @@ function getRelativeTime(dateString: string): string {
   return `${Math.floor(diffInDays / 7)}w ago`;
 }
 
-export default function HazardCard({ hazard }: { hazard: Hazard }) {
+export default function HazardCard({ hazard, onClick }: { hazard: Hazard; onClick?: () => void }) {
   const userUpvotedHazardIds = useHazardStore((state) => state.userUpvotedHazardIds);
   const toggleUpvote = useHazardStore((state) => state.toggleUpvote);
   const userLocation = useHazardStore((state) => state.userLocation);
@@ -53,7 +53,10 @@ export default function HazardCard({ hazard }: { hazard: Hazard }) {
   const categoryIcon = CATEGORY_ICONS?.[hazard.category] || '📋';
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-[#E2E8DC] overflow-hidden transition-all hover:shadow-md">
+    <div 
+      onClick={onClick}
+      className={`bg-white rounded-2xl shadow-sm border border-[#E2E8DC] overflow-hidden transition-all hover:shadow-md ${onClick ? 'cursor-pointer active:scale-[0.98]' : ''}`}
+    >
       {/* Image */}
       {hazard.imageUrl && (
         <div className="h-40 w-full relative overflow-hidden bg-slate-900">
@@ -117,9 +120,11 @@ export default function HazardCard({ hazard }: { hazard: Hazard }) {
             </span>
           </div>
           
-          {/* Toggleable Upvote CTA */}
           <button
-            onClick={handleUpvoteToggle}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleUpvoteToggle();
+            }}
             className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all active:scale-95 border ${
               isUpvoted 
                 ? 'bg-[#D4F67B] text-[#192625] border-[#B5E342] font-semibold shadow-sm' 

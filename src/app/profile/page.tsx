@@ -146,8 +146,10 @@ export default function ProfilePage() {
                   <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] ml-3 md:ml-0 p-3 rounded-lg border border-slate-100 bg-slate-50">
                     <div className="flex justify-between items-start mb-1">
                       <div className="font-medium text-slate-900 text-sm">{activity.description}</div>
-                      {activity.points && (
-                        <div className="text-xs font-bold text-green-600 bg-green-100 px-1.5 rounded">+{activity.points}</div>
+                      {typeof activity.points === 'number' && (
+                        <div className={`text-xs font-bold px-1.5 rounded ${activity.points === 0 ? 'text-gray-500 bg-gray-100' : 'text-green-600 bg-green-100'}`}>
+                          +{activity.points}
+                        </div>
                       )}
                     </div>
                     <time className="text-xs text-slate-500">{new Date(activity.timestamp).toLocaleDateString()} {new Date(activity.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</time>

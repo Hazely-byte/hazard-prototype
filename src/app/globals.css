@@ -79,6 +79,13 @@ body {
   display: none;
 }
 
+/* ===== Custom Leaflet Hazard Pins ===== */
+.hazard-pin-icon {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
 /* ===== Haptic Feedback ===== */
 .press-feedback {
   transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);

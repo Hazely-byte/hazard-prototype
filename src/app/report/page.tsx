@@ -89,7 +89,7 @@ export default function ReportPage() {
           }
         },
         (error) => {
-          console.error('Geolocation error', error);
+          console.warn('Geolocation fallback used (ignoring error for demo):', error.message);
           setLocation({ lat: 21.2514, lng: 81.6296, address: 'Raipur, Chhattisgarh' });
           setGeoLoading(false);
         },
@@ -141,7 +141,7 @@ export default function ReportPage() {
       // Compress thumbnail before sending and saving to storage
       const finalImage = await compressImage(capturedImage, 400, 300, 0.6);
 
-      const simulateAI = useHazardStore.getState().simulateAI;
+      // Always call the real Gemini API — no simulation bypass
       const res = await fetch('/api/moderate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -149,7 +149,6 @@ export default function ReportPage() {
           imageBase64: finalImage,
           description,
           category,
-          simulate: simulateAI,
         }),
       });
 

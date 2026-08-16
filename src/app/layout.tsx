@@ -9,13 +9,17 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'CivicShield — Report Hazards. Navigate Safe.',
+  title: 'Team LEAF — Report Hazards. Navigate Safe.',
   description:
     'A civic tech platform to report public infrastructure hazards, navigate safe routes, and earn civic karma for your community contributions.',
   keywords: ['civic', 'hazard', 'pothole', 'road safety', 'smart city', 'Raipur'],
-  authors: [{ name: 'CivicShield Team' }],
+  authors: [{ name: 'Team LEAF' }],
+  icons: {
+    icon: '/logo.jpg',
+    apple: '/logo.jpg',
+  },
   openGraph: {
-    title: 'CivicShield — Report Hazards. Navigate Safe.',
+    title: 'Team LEAF — Report Hazards. Navigate Safe.',
     description: 'Report potholes, broken bridges, hanging wires and more. Help your city become safer.',
     type: 'website',
   },

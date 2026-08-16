@@ -2,8 +2,8 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'CivicShield — Civic Hazard Reporter',
-    short_name: 'CivicShield',
+    name: 'Team LEAF — Civic Hazard Reporter',
+    short_name: 'Team LEAF',
     description: 'Report public infrastructure hazards, navigate safe routes, and earn civic karma.',
     start_url: '/feed',
     display: 'standalone',
