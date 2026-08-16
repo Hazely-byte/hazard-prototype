@@ -186,7 +186,7 @@ export default function MapPage() {
         <button
           onClick={handleLocateMe}
           disabled={locatingMe}
-          className="absolute bottom-24 right-4 z-[1000] w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4D6C1D] active:scale-95 transition-all hover:bg-[#F8FAF5] border border-[#E2E8DC] disabled:opacity-50"
+          className="absolute bottom-32 right-4 z-[1000] w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center text-[#4D6C1D] active:scale-95 transition-all hover:bg-[#F8FAF5] border border-[#E2E8DC] disabled:opacity-50"
           aria-label="Locate me"
         >
           {locatingMe ? (
