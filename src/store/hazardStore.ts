@@ -304,8 +304,9 @@ export const useHazardStore = create<HazardState>()(
             return;
           }
 
+          let mappedHazards: Hazard[] = [];
           if (data && data.length > 0) {
-            const mappedHazards: Hazard[] = data.map((row: any) => ({
+            mappedHazards = data.map((row: any) => ({
               id: row.id,
               category: row.type,
               title: row.title,
@@ -324,24 +325,27 @@ export const useHazardStore = create<HazardState>()(
               status: row.status,
               isDeletable: row.is_deletable,
             }));
-
-            set({
-              hazards: mappedHazards,
-              userUpvotedHazardIds: [],
-              alerts: INITIAL_ALERTS,
-              userProfile: {
-                ...get().userProfile,
-                activityLog: [
-                  {
-                    id: crypto.randomUUID(),
-                    type: 'badge',
-                    description: 'Loaded local data',
-                    timestamp: new Date().toISOString(),
-                  },
-                ],
-              },
-            });
           }
+
+          const seedWithDeletableFalse = SEED_HAZARDS.map(h => ({ ...h, isDeletable: false }));
+          const combinedHazards = [...mappedHazards, ...seedWithDeletableFalse];
+
+          set({
+            hazards: combinedHazards,
+            userUpvotedHazardIds: [],
+            alerts: INITIAL_ALERTS,
+            userProfile: {
+              ...get().userProfile,
+              activityLog: [
+                {
+                  id: crypto.randomUUID(),
+                  type: 'badge',
+                  description: 'Loaded live and seed data',
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+            },
+          });
         } catch (error) {
           console.error("Failed to fetch seed data:", error);
         }
