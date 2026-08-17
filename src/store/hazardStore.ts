@@ -327,8 +327,18 @@ export const useHazardStore = create<HazardState>()(
             }));
           }
 
-          const seedWithDeletableFalse = SEED_HAZARDS.map(h => ({ ...h, isDeletable: false }));
-          const combinedHazards = [...mappedHazards, ...seedWithDeletableFalse];
+          let seedHazards: Hazard[] = [];
+          try {
+            const res = await fetch('/api/seed');
+            const seedData = await res.json();
+            if (seedData.hazards && seedData.hazards.length > 0) {
+              seedHazards = seedData.hazards.map((h: Hazard) => ({ ...h, isDeletable: false }));
+            }
+          } catch (seedErr) {
+            console.error("Failed to fetch local seed data:", seedErr);
+          }
+
+          const combinedHazards = [...mappedHazards, ...seedHazards];
 
           set({
             hazards: combinedHazards,
