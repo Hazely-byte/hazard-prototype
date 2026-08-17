@@ -19,6 +19,7 @@ export interface Hazard {
   reporterPoints: number;
   timestamp: string; // ISO date string, use dates within last 2 weeks from 2026-08-15
   status: HazardStatus;
+  isDeletable?: boolean;
 }
 
 export interface Badge {

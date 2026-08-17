@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { X, MapPin, AlertTriangle, ArrowBigUp, Flag, CheckCircle2, Clock } from 'lucide-react';
+import { X, MapPin, AlertTriangle, ArrowBigUp, Flag, CheckCircle2, Clock, Trash } from 'lucide-react';
 import { Hazard, CATEGORY_LABELS, CATEGORY_ICONS } from '@/data/seedData';
 import { calculateDistance, formatDistance } from '@/lib/geocode';
+import { useHazardStore } from '@/store/hazardStore';
+import { supabase } from '@/lib/supabaseClient';
 
 interface ReportModalProps {
   hazard: Hazard | null;
@@ -19,6 +21,25 @@ export default function ReportModal({ hazard, isOpen, onClose, userLocation, isU
   const [showReportMenu, setShowReportMenu] = useState(false);
   const [reportReason, setReportReason] = useState('Fake');
   const [otherReason, setOtherReason] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const deleteHazard = useHazardStore((state) => state.deleteHazard);
+
+  const handleDelete = async () => {
+    if (!hazard) return;
+    if (window.confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+      setIsDeleting(true);
+      try {
+        await supabase.from('hazards').delete().eq('id', hazard.id);
+        deleteHazard(hazard.id);
+        onClose();
+      } catch (error) {
+        console.error('Failed to delete hazard:', error);
+        alert('Failed to delete report. Please try again.');
+      } finally {
+        setIsDeleting(false);
+      }
+    }
+  };
 
   if (!isOpen || !hazard) return null;
 
@@ -235,6 +256,20 @@ export default function ReportModal({ hazard, isOpen, onClose, userLocation, isU
               )}
             </div>
           </div>
+          
+          {/* Delete Action (Conditional) */}
+          {hazard.isDeletable && (
+            <div className="mt-4 border-t border-gray-100 pt-4">
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-red-500 bg-red-50 border border-red-100 hover:bg-red-100 transition-all active:scale-95 disabled:opacity-50"
+              >
+                <Trash size={18} />
+                {isDeleting ? 'Deleting...' : 'Delete Report'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

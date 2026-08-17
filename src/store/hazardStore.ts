@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { Hazard, SEED_HAZARDS, BADGES, Badge, TierInfo, TIERS } from '@/data/seedData';
+import { supabase } from '@/lib/supabaseClient';
 
 export interface ActivityEntry {
   id: string;
@@ -93,6 +94,7 @@ interface HazardState {
   dismissAlert: (id: string) => void;
   addCivicPoints: (points: number, reason: string) => void;
   reportPost: (reason: string) => void;
+  deleteHazard: (id: string) => void;
   getCurrentTier: () => TierInfo;
   getEarnedBadges: () => Badge[];
   resetStore: () => void;
@@ -174,7 +176,7 @@ export const useHazardStore = create<HazardState>()(
         set({ userLocation: location });
       },
 
-      addHazard: (hazardData) => {
+      addHazard: async (hazardData) => {
         const id = crypto.randomUUID();
         const timestamp = new Date().toISOString();
         const userProfile = get().userProfile;
@@ -187,6 +189,7 @@ export const useHazardStore = create<HazardState>()(
           status: 'active',
           reporterName: userProfile.name,
           reporterPoints: userProfile.civicPoints + 50,
+          isDeletable: true,
         };
 
         const newActivity: ActivityEntry = {
@@ -210,6 +213,28 @@ export const useHazardStore = create<HazardState>()(
             },
           };
         });
+
+        // Supabase Insert (Optimistic UI)
+        try {
+          await supabase.from('hazards').insert({
+            id,
+            type: hazardData.category,
+            title: hazardData.title,
+            description: hazardData.description,
+            location_lat: hazardData.location.lat,
+            location_lng: hazardData.location.lng,
+            location_address: hazardData.location.address || '',
+            image_url: hazardData.imageUrl,
+            severity: hazardData.severity,
+            upvotes: 0,
+            reporter_name: userProfile.name,
+            reporter_points: userProfile.civicPoints + 50,
+            status: 'active',
+            is_deletable: true
+          });
+        } catch (error) {
+          console.error("Failed to insert hazard into Supabase:", error);
+        }
       },
 
       toggleUpvote: (id) => {
@@ -269,11 +294,39 @@ export const useHazardStore = create<HazardState>()(
 
       fetchSeedData: async () => {
         try {
-          const res = await fetch('/api/seed');
-          const data = await res.json();
-          if (data.hazards && data.hazards.length > 0) {
+          const { data, error } = await supabase
+            .from('hazards')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error("Supabase fetch error:", error);
+            return;
+          }
+
+          if (data && data.length > 0) {
+            const mappedHazards: Hazard[] = data.map((row: any) => ({
+              id: row.id,
+              category: row.type,
+              title: row.title,
+              description: row.description,
+              location: {
+                lat: row.location_lat,
+                lng: row.location_lng,
+                address: row.location_address || '',
+              },
+              imageUrl: row.image_url,
+              severity: row.severity,
+              upvotes: row.upvotes,
+              reporterName: row.reporter_name,
+              reporterPoints: row.reporter_points,
+              timestamp: row.created_at,
+              status: row.status,
+              isDeletable: row.is_deletable,
+            }));
+
             set({
-              hazards: data.hazards,
+              hazards: mappedHazards,
               userUpvotedHazardIds: [],
               alerts: INITIAL_ALERTS,
               userProfile: {
@@ -371,6 +424,12 @@ export const useHazardStore = create<HazardState>()(
             },
           };
         });
+      },
+
+      deleteHazard: (id) => {
+        set((state) => ({
+          hazards: state.hazards.filter((h) => h.id !== id),
+        }));
       },
 
       getCurrentTier: () => {
