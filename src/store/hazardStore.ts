@@ -102,7 +102,7 @@ interface HazardState {
 
 const initialProfile: UserProfile = {
   name: 'Owner',
-  civicPoints: 850,
+  civicPoints: 730,
   reportsCount: 12,
   upvotesReceived: 48,
   hazardsResolved: 3,
@@ -469,7 +469,7 @@ export const useHazardStore = create<HazardState>()(
       }),
     }),
     {
-      name: 'civicshield-store',
+      name: 'sanket-store',
       storage: createJSONStorage(() => safeLocalStorage),
       partialize: (state) => ({ 
         hazards: state.hazards, 
