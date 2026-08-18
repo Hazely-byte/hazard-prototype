@@ -107,10 +107,10 @@ export default function FeedPage() {
       <div className="sticky top-0 bg-white/85 backdrop-blur-md border-b border-[#E2E8DC] px-4 py-3 z-30 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0">
-            <img src="/logo.jpg" alt="Team LEAF Logo" className="w-full h-full object-cover" />
+            <img src="/logo.jpg" alt="SANKET Logo" className="w-full h-full object-cover" />
           </div>
           <div>
-            <span className="font-extrabold text-base text-[#192625] tracking-tight">Team LEAF</span>
+            <span className="font-extrabold text-base text-[#192625] tracking-tight">SANKET</span>
           </div>
         </div>
         

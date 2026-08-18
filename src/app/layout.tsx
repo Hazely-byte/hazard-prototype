@@ -9,11 +9,15 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Team LEAF — Report Hazards. Navigate Safe.',
-  description:
-    'A civic tech platform to report public infrastructure hazards, navigate safe routes, and earn civic karma for your community contributions.',
+  title: 'SANKET',
+  description: 'Smart city hazard reporting and navigation platform.',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'SANKET',
+  },
   keywords: ['civic', 'hazard', 'pothole', 'road safety', 'smart city', 'Raipur'],
-  authors: [{ name: 'Team LEAF' }],
+  authors: [{ name: 'SANKET' }],
   icons: {
     icon: '/logo.jpg',
     apple: '/logo.jpg',

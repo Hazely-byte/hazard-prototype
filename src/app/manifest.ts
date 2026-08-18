@@ -2,9 +2,9 @@ import type { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Team LEAF — Civic Hazard Reporter',
-    short_name: 'Team LEAF',
-    description: 'Report public infrastructure hazards, navigate safe routes, and earn civic karma.',
+    name: 'SANKET',
+    short_name: 'SANKET',
+    description: 'Smart city hazard reporting and navigation platform.',
     start_url: '/feed',
     display: 'standalone',
     background_color: '#F8FAF5',
